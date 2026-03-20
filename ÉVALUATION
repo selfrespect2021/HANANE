@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Évaluation du travail en groupe</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#f5f2eb;--surface:#fffdf8;--surface2:#f0ece2;
+    --ink:#1a1714;--ink2:#5a5347;--ink3:#9a8f82;
+    --accent:#c94f2a;--border:rgba(26,23,20,0.12);--border2:rgba(26,23,20,0.06);
+    --shadow:0 2px 16px rgba(26,23,20,0.08);--shadow-lg:0 8px 40px rgba(26,23,20,0.14);
+    --r:14px;--r-sm:8px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:15px;}
+
+  /* TOP BAR */
+  .topbar{background:var(--ink);color:#fffdf8;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:58px;position:sticky;top:0;z-index:200;}
+  .topbar-title{font-family:'DM Serif Display',serif;font-size:20px;color:#fffdf8;}
+  .topbar-sub{font-size:12px;opacity:0.45;margin-left:10px;}
+  .topbar-actions{display:flex;gap:8px;align-items:center;}
+  .tbtn{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;padding:7px 16px;border-radius:100px;border:none;cursor:pointer;transition:all 0.2s;}
+  .tbtn.ol{background:transparent;border:1px solid rgba(255,255,255,0.3);color:#fffdf8;}
+  .tbtn.ol:hover{background:rgba(255,255,255,0.1);}
+  .tbtn.acc{background:var(--accent);color:#fff;}
+  .tbtn.acc:hover{background:#a83d1e;}
+  .tbtn.fs{background:transparent;border:1px solid rgba(255,255,255,0.3);color:#fffdf8;font-size:18px;padding:4px 11px;}
+  .tbtn.fs:hover{background:rgba(255,255,255,0.15);}
+
+  /* LAYOUT */
+  .app{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 4rem;}
+
+  /* SESSION CARD */
+  .session-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.4rem 2rem;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:1.2rem;align-items:end;margin-bottom:2rem;box-shadow:var(--shadow);}
+  .fg label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--ink3);margin-bottom:5px;}
+  .fg input{width:100%;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;padding:9px 12px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg);color:var(--ink);outline:none;transition:border-color 0.2s;}
+  .fg input:focus{border-color:var(--accent);}
+
+  /* MAIN GRID */
+  .main-grid{display:grid;grid-template-columns:390px 1fr;gap:1.5rem;align-items:start;}
+
+  /* RADAR CARD */
+  .radar-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;box-shadow:var(--shadow);position:sticky;top:74px;}
+  .rc-title{font-family:'DM Serif Display',serif;font-size:16px;margin-bottom:1rem;}
+  #radarCanvas{width:100%;display:block;border-radius:10px;background:#fff;}
+  .stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:1.2rem;}
+  .stat-box{background:var(--surface2);border-radius:var(--r-sm);padding:10px;text-align:center;}
+  .slbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--ink3);}
+  .sval{font-size:22px;font-weight:700;color:var(--ink);margin-top:2px;}
+  .sval.acc{color:var(--accent);}
+  .level-badge{display:block;margin-top:1rem;width:100%;text-align:center;padding:9px;border-radius:var(--r-sm);font-size:13px;font-weight:700;letter-spacing:0.03em;}
+
+  /* CRITERIA */
+  .panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .panel-title{font-family:'DM Serif Display',serif;font-size:18px;}
+  .add-btn{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;padding:7px 14px;border-radius:100px;border:1.5px dashed var(--border);background:transparent;color:var(--ink2);cursor:pointer;transition:all 0.2s;}
+  .add-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .criteria-panel{display:flex;flex-direction:column;gap:9px;}
+
+  .crit-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;box-shadow:var(--shadow);transition:box-shadow 0.2s,transform 0.15s;position:relative;overflow:hidden;animation:fadeUp 0.3s ease both;}
+  .crit-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent);border-radius:4px 0 0 4px;opacity:0;transition:opacity 0.2s;}
+  .crit-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-1px);}
+  .crit-card:hover::before{opacity:1;}
+  .crit-top{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
+  .crit-num{width:26px;height:26px;background:var(--surface2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--ink3);flex-shrink:0;}
+  .crit-name-input{flex:1;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;background:transparent;border:none;border-bottom:1.5px solid transparent;color:var(--ink);outline:none;padding:2px 0;transition:border-color 0.2s;}
+  .crit-name-input:focus{border-bottom-color:var(--accent);}
+  .crit-score-badge{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0;transition:background 0.3s,color 0.3s;}
+  .del-btn{background:none;border:none;cursor:pointer;color:var(--ink3);font-size:16px;padding:2px 4px;border-radius:4px;opacity:0.4;transition:opacity 0.2s;flex-shrink:0;}
+  .del-btn:hover{opacity:1;color:var(--accent);}
+  .crit-slider-row{display:flex;align-items:center;gap:10px;}
+  .crit-slider-lbl{font-size:11px;color:var(--ink3);font-weight:700;width:12px;text-align:center;}
+  .crit-slider{flex:1;-webkit-appearance:none;height:5px;border-radius:10px;outline:none;cursor:pointer;transition:background 0.3s;}
+  .crit-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:3px solid var(--surface);box-shadow:0 0 0 1.5px var(--accent);cursor:pointer;transition:transform 0.15s;}
+  .crit-slider::-webkit-slider-thumb:hover{transform:scale(1.25);}
+  .crit-stars{display:flex;gap:3px;margin-top:6px;justify-content:flex-end;}
+  .star{font-size:12px;transition:color 0.2s;}
+
+  /* HISTORY */
+  .history-section{margin-top:2rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);}
+  .hist-header{padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+  .hist-title{font-family:'DM Serif Display',serif;font-size:16px;}
+  .hist-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .sel-info{font-size:12px;color:var(--ink3);display:none;}
+  .del-sel-btn{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;padding:6px 14px;border-radius:100px;border:1px solid #e24b4a;color:#a83d1e;background:transparent;cursor:pointer;transition:all 0.2s;display:none;}
+  .del-sel-btn:hover{background:#fce8e2;}
+  .history-table{width:100%;border-collapse:collapse;font-size:13px;}
+  .history-table th{text-align:left;padding:10px 1rem;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink3);background:var(--surface2);border-bottom:1px solid var(--border);}
+  .history-table td{padding:11px 1rem;border-bottom:1px solid var(--border2);}
+  .history-table tr:last-child td{border-bottom:none;}
+  .history-table tr.sel-row td{background:#fff5f2;}
+  .history-table tr:hover td{background:var(--surface2);}
+  .hist-score{font-weight:700;color:var(--accent);}
+  .hist-badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;}
+  .empty-history{text-align:center;padding:2.5rem;color:var(--ink3);font-size:14px;}
+
+  /* FULLSCREEN */
+  #fsOverlay{display:none;position:fixed;inset:0;z-index:9999;background:#12100e;flex-direction:row;align-items:center;justify-content:center;gap:2.5rem;padding:1.5rem;}
+  #fsOverlay.active{display:flex;}
+  #fsCanvasWrap{flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+  #fsCanvas{display:block;border-radius:18px;}
+  .fs-side{display:flex;flex-direction:column;gap:1.6rem;min-width:220px;max-width:280px;}
+  .fs-group{font-family:'DM Serif Display',serif;font-size:26px;color:#fffdf8;line-height:1.2;}
+  .fs-date{font-size:13px;color:rgba(255,255,255,0.38);margin-top:6px;}
+  .fs-stats{display:flex;flex-direction:column;gap:12px;}
+  .fs-stat{background:rgba(255,255,255,0.06);border-radius:12px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;}
+  .fs-sv{font-size:30px;font-weight:700;color:#e8955c;}
+  .fs-sl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.4);}
+  #fsLevel{font-size:15px;font-weight:700;padding:12px 20px;border-radius:12px;text-align:center;}
+  .fs-close{position:absolute;top:1.2rem;right:1.2rem;background:rgba(255,255,255,0.08);border:none;color:#fffdf8;font-size:20px;width:42px;height:42px;border-radius:50%;cursor:pointer;transition:background 0.2s;display:flex;align-items:center;justify-content:center;}
+  .fs-close:hover{background:rgba(255,255,255,0.2);}
+  @media(max-width:700px){#fsOverlay{flex-direction:column;gap:1rem;}.fs-side{max-width:100%;flex-direction:row;flex-wrap:wrap;align-items:center;}.fs-stats{flex-direction:row;}.fs-stat{padding:10px 14px;}}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  #toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fffdf8;padding:10px 22px;border-radius:100px;font-size:13px;font-weight:500;opacity:0;transition:all 0.3s;z-index:9998;pointer-events:none;}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media(max-width:860px){.session-card{grid-template-columns:1fr 1fr;}.main-grid{grid-template-columns:1fr;}.radar-card{position:static;}}
+  @media(max-width:500px){.session-card{grid-template-columns:1fr;}.topbar{padding:0 1rem;}.app{padding:1rem 1rem 3rem;}.topbar-sub{display:none;}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:6px;">
+    <span class="topbar-title">Évaluation de groupe</span>
+    <span class="topbar-sub">outil pédagogique</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="tbtn fs" onclick="openFS()" title="Plein écran">⛶</button>
+    <button class="tbtn ol" onclick="resetAll()">Réinitialiser</button>
+    <button class="tbtn ol" onclick="exportCSV()">Exporter CSV</button>
+    <button class="tbtn acc" onclick="saveSession()">Enregistrer la séance</button>
+  </div>
+</div>
+
+<div class="app">
+  <div class="session-card">
+    <div class="fg"><label>Nom du groupe</label><input id="groupName" type="text" placeholder="Ex : Groupe Phoenix" value="Groupe A"/></div>
+    <div class="fg"><label>Enseignant / Animateur</label><input id="teacherName" type="text" placeholder="Votre nom"/></div>
+    <div class="fg"><label>Date de la séance</label><input id="sessionDate" type="date"/></div>
+    <div class="fg"><label>Matière</label><input id="subject" type="text" placeholder="Ex : Sciences"/></div>
+  </div>
+
+  <div class="main-grid">
+    <div class="radar-card">
+      <div class="rc-title">Graphique radar</div>
+      <canvas id="radarCanvas" width="370" height="370"></canvas>
+      <div class="stats-row">
+        <div class="stat-box"><div class="slbl">Moyenne</div><div class="sval acc" id="statAvg">–</div></div>
+        <div class="stat-box"><div class="slbl">Maximum</div><div class="sval" id="statMax">–</div></div>
+        <div class="stat-box"><div class="slbl">Minimum</div><div class="sval" id="statMin">–</div></div>
+      </div>
+      <span class="level-badge" id="levelBadge">–</span>
+    </div>
+    <div>
+      <div class="panel-header">
+        <div class="panel-title">Axes d'évaluation</div>
+        <button class="add-btn" onclick="addCriterion()">+ Ajouter un axe</button>
+      </div>
+      <div class="criteria-panel" id="criteriaPanel"></div>
+    </div>
+  </div>
+
+  <div class="history-section">
+    <div class="hist-header">
+      <div class="hist-title">Historique des séances</div>
+      <div class="hist-actions">
+        <span class="sel-info" id="selInfo"></span>
+        <button class="del-sel-btn" id="delSelBtn" onclick="deleteSelected()">🗑 Supprimer la sélection</button>
+        <button class="tbtn ol" style="font-size:11px;padding:5px 12px;border-color:var(--border);color:var(--ink2);border-radius:100px;" onclick="clearHistory()">Tout effacer</button>
+      </div>
+    </div>
+    <div id="historyBody"><div class="empty-history">Aucune séance enregistrée. Cliquez sur « Enregistrer la séance » pour commencer.</div></div>
+  </div>
+</div>
+
+<!-- FULLSCREEN -->
+<div id="fsOverlay">
+  <button class="fs-close" onclick="closeFS()">✕</button>
+  <div id="fsCanvasWrap"><canvas id="fsCanvas"></canvas></div>
+  <div class="fs-side">
+    <div>
+      <div class="fs-group" id="fsGroup">–</div>
+      <div class="fs-date" id="fsDate"></div>
+    </div>
+    <div class="fs-stats">
+      <div class="fs-stat"><div class="fs-sl">Moyenne</div><div class="fs-sv" id="fsAvg">–</div></div>
+      <div class="fs-stat"><div class="fs-sl">Maximum</div><div class="fs-sv" id="fsMax" style="color:#5cb87a;">–</div></div>
+      <div class="fs-stat"><div class="fs-sl">Minimum</div><div class="fs-sv" id="fsMin" style="color:#e8734a;">–</div></div>
+    </div>
+    <span id="fsLevel" class="level-badge">–</span>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const DEFAULTS=["Gestion du temps","Participation de tous","Bonne entente","Calme (peu de bruit)","Confrontation des idées","Bonne écoute","Réalisation de la consigne","Apprentissage"];
+let criteria=DEFAULTS.map(n=>({name:n,score:3}));
+let history=JSON.parse(localStorage.getItem('evalHistory')||'[]');
+let selectedIds=new Set();
+
+document.getElementById('sessionDate').value=new Date().toISOString().slice(0,10);
+render();
+renderHistory();
+
+/* ─── RENDER ─── */
+function render(){
+  const panel=document.getElementById('criteriaPanel');
+  panel.innerHTML='';
+  criteria.forEach((c,i)=>{
+    const card=document.createElement('div');
+    card.className='crit-card';
+    card.style.animationDelay=(i*25)+'ms';
+    const sc=getScoreColor(c.score);
+    card.innerHTML=`
+      <div class="crit-top">
+        <div class="crit-num">${i+1}</div>
+        <input class="crit-name-input" value="${esc(c.name)}" onchange="criteria[${i}].name=this.value;drawRadar();" placeholder="Nom du critère"/>
+        <div class="crit-score-badge" id="badge-${i}" style="background:${sc.bg};color:${sc.fg};">${c.score}</div>
+        <button class="del-btn" onclick="removeCriterion(${i})" title="Supprimer">✕</button>
+      </div>
+      <div class="crit-slider-row">
+        <span class="crit-slider-lbl">1</span>
+        <input class="crit-slider" type="range" min="1" max="5" step="1" value="${c.score}"
+          style="background:${getTrack(c.score)};" oninput="onSlider(${i},this)" id="sl-${i}"/>
+        <span class="crit-slider-lbl">5</span>
+      </div>
+      <div class="crit-stars" id="stars-${i}">${makeStars(c.score)}</div>`;
+    panel.appendChild(card);
+  });
+  updateStats();
+  drawRadar();
+}
+
+function onSlider(i,el){
+  criteria[i].score=parseInt(el.value);
+  const sc=getScoreColor(criteria[i].score);
+  const b=document.getElementById('badge-'+i);
+  b.textContent=criteria[i].score;b.style.background=sc.bg;b.style.color=sc.fg;
+  el.style.background=getTrack(criteria[i].score);
+  document.getElementById('stars-'+i).innerHTML=makeStars(criteria[i].score);
+  updateStats();drawRadar();
+}
+
+function makeStars(s){let h='';for(let i=1;i<=5;i++)h+=`<span class="star" style="color:${i<=s?'#c94f2a':'#d4cbbf'};">★</span>`;return h;}
+function getScoreColor(s){return[,{bg:'#fce8e2',fg:'#a83d1e'},{bg:'#fdf0e6',fg:'#b8641a'},{bg:'#fdf5e0',fg:'#8a6d0a'},{bg:'#e4f2e8',fg:'#246b3a'},{bg:'#d8eedf',fg:'#1a5c30'}][s]||{bg:'#fdf5e0',fg:'#8a6d0a'};}
+function getTrack(s){const pct=((s-1)/4)*100;const c=['#e8734a','#e8955c','#e8c45c','#5cb87a','#2a7a4f'][s-1];return `linear-gradient(to right,${c} ${pct}%,#e0d9ce ${pct}%)`;}
+
+function updateStats(){
+  const sc=criteria.map(c=>c.score);
+  const avg=sc.reduce((a,b)=>a+b,0)/sc.length;
+  document.getElementById('statAvg').textContent=avg.toFixed(1);
+  document.getElementById('statMax').textContent=Math.max(...sc);
+  document.getElementById('statMin').textContent=Math.min(...sc);
+  applyLevel(document.getElementById('levelBadge'),avg);
+}
+function applyLevel(el,avg){
+  let lv,bg,fg;
+  if(avg>=4.5){lv='★ Excellent';bg='#246b3a';fg='#fff';}
+  else if(avg>=3.5){lv='↑ Bien';bg='#2a7a4f';fg='#fff';}
+  else if(avg>=2.5){lv='→ Satisfaisant';bg='#8a6d0a';fg='#fff';}
+  else if(avg>=1.5){lv='↓ À améliorer';bg='#b8641a';fg='#fff';}
+  else{lv='✗ Insuffisant';bg='#a83d1e';fg='#fff';}
+  el.textContent=lv;el.style.background=bg;el.style.color=fg;
+}
+
+/* ─── RADAR ─── */
+function drawRadar(){
+  const canvas=document.getElementById('radarCanvas');
+  const dpr=window.devicePixelRatio||1;
+  const size=canvas.offsetWidth||370;
+  if(canvas.width!==Math.round(size*dpr)){
+    canvas.width=Math.round(size*dpr);
+    canvas.height=Math.round(size*dpr);
+  }
+  const ctx=canvas.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  drawRadarOnCtx(ctx,size,size,criteria,false);
+}
+
+function drawRadarOnCtx(ctx,W,H,crits,dark){
+  ctx.clearRect(0,0,W,H);
+  const cx=W/2,cy=H/2,n=crits.length;
+  if(n<3)return;
+  // Generous margin for labels
+  const labelMargin=dark?70:58;
+  const maxR=Math.min(W,H)/2-labelMargin;
+
+  const ang=i=>(Math.PI*2*i/n)-Math.PI/2;
+
+  /* outer bg fill */
+  ctx.beginPath();
+  for(let i=0;i<n;i++){const a=ang(i);const x=cx+maxR*Math.cos(a),y=cy+maxR*Math.sin(a);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}
+  ctx.closePath();
+  ctx.fillStyle=dark?'rgba(255,255,255,0.05)':'rgba(26,23,20,0.03)';
+  ctx.fill();
+
+  /* rings */
+  const ringColors=dark?['rgba(255,255,255,0.12)','rgba(255,255,255,0.12)','rgba(255,255,255,0.18)','rgba(255,255,255,0.22)','rgba(255,255,255,0.5)']:['rgba(26,23,20,0.08)','rgba(26,23,20,0.10)','rgba(26,23,20,0.13)','rgba(26,23,20,0.16)','rgba(26,23,20,0.35)'];
+  for(let lv=1;lv<=5;lv++){
+    const r=(lv/5)*maxR;
+    ctx.beginPath();
+    for(let i=0;i<n;i++){const a=ang(i);const x=cx+r*Math.cos(a),y=cy+r*Math.sin(a);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}
+    ctx.closePath();
+    ctx.strokeStyle=ringColors[lv-1];
+    ctx.lineWidth=lv===5?2:1;
+    ctx.stroke();
+    // Level number near top axis
+    const numA=ang(0)-0.22;
+    const nx=cx+(r-4)*Math.cos(numA)-4,ny=cy+(r-4)*Math.sin(numA)-4;
+    ctx.font=`700 ${dark?13:10}px sans-serif`;
+    ctx.fillStyle=dark?'rgba(255,255,255,0.5)':'rgba(26,23,20,0.35)';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(lv,nx,ny);
+  }
+
+  /* axes */
+  for(let i=0;i<n;i++){
+    ctx.beginPath();ctx.moveTo(cx,cy);
+    const a=ang(i);ctx.lineTo(cx+maxR*Math.cos(a),cy+maxR*Math.sin(a));
+    ctx.strokeStyle=dark?'rgba(255,255,255,0.22)':'rgba(26,23,20,0.18)';
+    ctx.lineWidth=1;ctx.stroke();
+  }
+
+  /* score polygon */
+  ctx.beginPath();
+  for(let i=0;i<n;i++){
+    const a=ang(i);const r=(crits[i].score/5)*maxR;
+    const x=cx+r*Math.cos(a),y=cy+r*Math.sin(a);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.closePath();
+  ctx.fillStyle=dark?'rgba(232,149,92,0.35)':'rgba(201,79,42,0.22)';
+  ctx.fill();
+  ctx.strokeStyle=dark?'#ff8c42':'#c94f2a';
+  ctx.lineWidth=dark?3.5:2.5;
+  ctx.lineJoin='round';
+  ctx.stroke();
+
+  /* dots at each vertex */
+  for(let i=0;i<n;i++){
+    const a=ang(i);const r=(crits[i].score/5)*maxR;
+    const x=cx+r*Math.cos(a),y=cy+r*Math.sin(a);
+    const dotR=dark?8:5;
+    ctx.beginPath();ctx.arc(x,y,dotR,0,Math.PI*2);
+    ctx.fillStyle=dark?'#12100e':'#fff';ctx.fill();
+    ctx.strokeStyle=dark?'#ff8c42':'#c94f2a';ctx.lineWidth=dark?3:2.5;ctx.stroke();
+    // score number offset away from center
+    const ox=(r<15)?0:16*Math.cos(a),oy=(r<15)?-18:16*Math.sin(a);
+    ctx.font=`700 ${dark?15:12}px sans-serif`;
+    ctx.fillStyle=dark?'#ffb07a':'#c94f2a';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(crits[i].score,x+ox,y+oy);
+  }
+
+  /* axis labels — wrap long names */
+  const fSize=dark?14:11;
+  ctx.font=`600 ${fSize}px sans-serif`;
+  for(let i=0;i<n;i++){
+    const a=ang(i);
+    const lr=maxR+( dark?22:18 );
+    const lx=cx+lr*Math.cos(a),ly=cy+lr*Math.sin(a);
+    const name=crits[i].name;
+    ctx.fillStyle=dark?'rgba(255,255,255,0.92)':'rgba(26,23,20,0.82)';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    // Split into two lines if too long
+    if(name.length>14){
+      const mid=name.lastIndexOf(' ',Math.floor(name.length/2)+3)||Math.floor(name.length/2);
+      const l1=name.slice(0,mid).trim(),l2=name.slice(mid).trim();
+      const lh=dark?17:13;
+      ctx.fillText(l1,lx,ly-lh/2);
+      ctx.fillText(l2,lx,ly+lh/2);
+    } else {
+      ctx.fillText(name,lx,ly);
+    }
+  }
+}
+
+/* ─── FULLSCREEN ─── */
+function openFS(){
+  const ov=document.getElementById('fsOverlay');
+  ov.classList.add('active');
+  document.getElementById('fsGroup').textContent=document.getElementById('groupName').value||'Groupe';
+  const d=document.getElementById('sessionDate').value;
+  document.getElementById('fsDate').textContent=d?formatDate(d):'';
+  const sc=criteria.map(c=>c.score);
+  const avg=sc.reduce((a,b)=>a+b,0)/sc.length;
+  document.getElementById('fsAvg').textContent=avg.toFixed(1);
+  document.getElementById('fsMax').textContent=Math.max(...sc);
+  document.getElementById('fsMin').textContent=Math.min(...sc);
+  applyLevel(document.getElementById('fsLevel'),avg);
+  requestAnimationFrame(()=>{
+    const wrap=document.getElementById('fsCanvasWrap');
+    const canvas=document.getElementById('fsCanvas');
+    // Calculate available space: full height minus padding, minus side panel
+    const availH=window.innerHeight-80;
+    const availW=wrap.clientWidth||Math.min(window.innerWidth-340,window.innerHeight-80);
+    const size=Math.min(availH,availW,Math.min(window.innerWidth-320,window.innerHeight-60));
+    const dpr=window.devicePixelRatio||1;
+    canvas.width=Math.round(size*dpr);
+    canvas.height=Math.round(size*dpr);
+    canvas.style.width=size+'px';
+    canvas.style.height=size+'px';
+    const ctx=canvas.getContext('2d');
+    ctx.scale(dpr,dpr);
+    drawRadarOnCtx(ctx,size,size,criteria,true);
+  });
+}
+function closeFS(){document.getElementById('fsOverlay').classList.remove('active');}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeFS();});
+window.addEventListener('resize',()=>{if(document.getElementById('fsOverlay').classList.contains('active'))openFS();});
+
+/* ─── CRITERIA ACTIONS ─── */
+function addCriterion(){criteria.push({name:"Nouveau critère",score:3});render();}
+function removeCriterion(i){if(criteria.length<=3){showToast("Minimum 3 critères requis");return;}criteria.splice(i,1);render();}
+function resetAll(){if(!confirm("Réinitialiser tous les critères et scores ?"))return;criteria=DEFAULTS.map(n=>({name:n,score:3}));render();showToast("Critères réinitialisés");}
+function saveSession(){
+  const group=document.getElementById('groupName').value||'Groupe';
+  const teacher=document.getElementById('teacherName').value||'–';
+  const date=document.getElementById('sessionDate').value||new Date().toISOString().slice(0,10);
+  const subject=document.getElementById('subject').value||'–';
+  const avg=(criteria.reduce((a,b)=>a+b.score,0)/criteria.length).toFixed(1);
+  history.unshift({id:Date.now(),group,teacher,date,subject,avg,scores:criteria.map(c=>({...c}))});
+  localStorage.setItem('evalHistory',JSON.stringify(history));
+  renderHistory();showToast(`Séance de ${group} enregistrée !`);
+}
+
+/* ─── HISTORY ─── */
+function renderHistory(){
+  const body=document.getElementById('historyBody');
+  if(!history.length){body.innerHTML='<div class="empty-history">Aucune séance enregistrée. Cliquez sur « Enregistrer la séance » pour commencer.</div>';return;}
+  let html=`<table class="history-table"><thead><tr>
+    <th style="width:40px;text-align:center;"><input type="checkbox" id="chkAll" onchange="toggleAll(this.checked)" style="cursor:pointer;accent-color:var(--accent);width:15px;height:15px;"></th>
+    <th>Groupe</th><th>Date</th><th>Matière</th><th>Animateur</th>
+    <th>Moyenne</th><th>Niveau</th><th>Actions</th>
+  </tr></thead><tbody>`;
+  history.forEach(h=>{
+    const avg=parseFloat(h.avg);
+    let lv,lbg,lfg;
+    if(avg>=4.5){lv='Excellent';lbg='#246b3a';lfg='#fff';}
+    else if(avg>=3.5){lv='Bien';lbg='#2a7a4f';lfg='#fff';}
+    else if(avg>=2.5){lv='Satisfaisant';lbg='#7a6d0a';lfg='#fff';}
+    else if(avg>=1.5){lv='À améliorer';lbg='#b8641a';lfg='#fff';}
+    else{lv='Insuffisant';lbg='#a83d1e';lfg='#fff';}
+    const sel=selectedIds.has(h.id);
+    html+=`<tr id="row-${h.id}" class="${sel?'sel-row':''}">
+      <td style="text-align:center;"><input type="checkbox" class="rc" data-id="${h.id}" ${sel?'checked':''} onchange="toggleRow(${h.id},this.checked)" style="cursor:pointer;accent-color:var(--accent);width:15px;height:15px;"></td>
+      <td style="font-weight:600;">${esc(h.group)}</td>
+      <td>${formatDate(h.date)}</td>
+      <td>${esc(h.subject)}</td>
+      <td>${esc(h.teacher)}</td>
+      <td class="hist-score">${h.avg}/5</td>
+      <td><span class="hist-badge" style="background:${lbg};color:${lfg};">${lv}</span></td>
+      <td style="display:flex;gap:8px;align-items:center;">
+        <button style="background:none;border:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--ink2);" onclick="loadSession(${h.id})">Charger</button>
+        <button style="background:none;border:none;cursor:pointer;font-size:12px;color:#a83d1e;" onclick="deleteOne(${h.id})">Suppr.</button>
+      </td>
+    </tr>`;
+  });
+  html+='</tbody></table>';
+  body.innerHTML=html;
+  updateSelUI();
+}
+
+function toggleRow(id,checked){
+  if(checked)selectedIds.add(id);else selectedIds.delete(id);
+  const row=document.getElementById('row-'+id);
+  if(row)row.className=checked?'sel-row':'';
+  updateSelUI();
+}
+function toggleAll(checked){
+  history.forEach(h=>{
+    if(checked)selectedIds.add(h.id);else selectedIds.delete(h.id);
+    const row=document.getElementById('row-'+h.id);if(row)row.className=checked?'sel-row':'';
+    const cb=document.querySelector(`.rc[data-id="${h.id}"]`);if(cb)cb.checked=checked;
+  });
+  updateSelUI();
+}
+function updateSelUI(){
+  const n=selectedIds.size;
+  const btn=document.getElementById('delSelBtn');
+  const info=document.getElementById('selInfo');
+  if(n>0){btn.style.display='inline-block';info.style.display='inline';info.textContent=`${n} séance${n>1?'s':''} sélectionnée${n>1?'s':''}`;}
+  else{btn.style.display='none';info.style.display='none';}
+}
+function deleteSelected(){
+  if(!selectedIds.size)return;
+  if(!confirm(`Supprimer ${selectedIds.size} séance(s) sélectionnée(s) ?`))return;
+  history=history.filter(h=>!selectedIds.has(h.id));
+  selectedIds.clear();
+  localStorage.setItem('evalHistory',JSON.stringify(history));
+  renderHistory();showToast("Séances supprimées");
+}
+function deleteOne(id){
+  if(!confirm("Supprimer cette séance ?"))return;
+  history=history.filter(h=>h.id!==id);
+  selectedIds.delete(id);
+  localStorage.setItem('evalHistory',JSON.stringify(history));
+  renderHistory();showToast("Séance supprimée");
+}
+function clearHistory(){
+  if(!confirm("Supprimer tout l'historique ?"))return;
+  history=[];selectedIds.clear();
+  localStorage.removeItem('evalHistory');
+  renderHistory();
+}
+function loadSession(id){
+  const e=history.find(h=>h.id===id);if(!e)return;
+  criteria=e.scores.map(c=>({...c}));
+  document.getElementById('groupName').value=e.group;
+  document.getElementById('teacherName').value=e.teacher;
+  document.getElementById('sessionDate').value=e.date;
+  document.getElementById('subject').value=e.subject;
+  render();window.scrollTo({top:0,behavior:'smooth'});
+  showToast("Séance chargée : "+e.group);
+}
+function exportCSV(){
+  const group=document.getElementById('groupName').value||'Groupe';
+  const date=document.getElementById('sessionDate').value||new Date().toISOString().slice(0,10);
+  let csv='\uFEFF'+'Groupe;Date;Critère;Note\n';
+  criteria.forEach(c=>{csv+=`"${group}";"${date}";"${c.name}";${c.score}\n`;});
+  csv+=`\n"Moyenne";"";"";${(criteria.reduce((a,b)=>a+b.score,0)/criteria.length).toFixed(2)}\n`;
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`evaluation_${group.replace(/\s+/g,'_')}_${date}.csv`;a.click();
+  showToast("Fichier CSV téléchargé");
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function formatDate(d){if(!d)return'–';const p=d.split('-');return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:d;}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+</script>
+</body>
+</html>
